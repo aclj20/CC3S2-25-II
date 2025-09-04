@@ -85,11 +85,111 @@ Aunque un KPI técnico como la tasa de errores 5xx se mantenga bajo control, pue
 
 ---
 
+## 4.6 Fundamentos prácticos sin comandos 
+
+
+### 4.6.1 HTTP – contrato observable
+
+- **Método:** GET  
+- **Código de estado:** 200  
+- **Cabeceras observadas:**  
+  - `Cache-Control: no-cache, no-store, max-age=0...` → indica que la respuesta no debe almacenarse en caché.
+  - `X-Xss-Protection` → esta cabecera activa un filtro en el navegador para prevenir ataques de cross-site scripting (XSS).
+
+Esta evidencia muestra que la aplicación responde correctamente a solicitudes GET con código 200. La cabecera Cache-Control afecta el rendimiento y la eficiencia de la caché, evitando que el navegador almacene datos sensibles. Por otro lado, X-Xss-Protection contribuye a la seguridad del usuario, bloqueando intentos de ataques de inyección de scripts en el cliente. Ambas cabeceras permiten verificar que el contrato HTTP está cumpliéndose de manera correcta, asegurando tanto la funcionalidad como la protección básica en tránsito.
+
+![HTTP Evidencia](imagenes/http-evidencia.png)
+
+---
+
+### 4.6.2 DNS – nombres y TTL
+
+- **Tipo de registro:** CNAME que apunta a `d3qtt7lrnx5qh6.cloudfront.net.uni.pe`, el cual resuelve en varios registros tipo A.   
+- **TTL:** 6570 s
+
+Un TTL de casi dos horas significa que las respuestas de este dominio permanecerán en caché durante ese tiempo antes de que los resolvers consulten de nuevo.  
+Esto ayuda al rendimiento, ya que reduce la cantidad de consultas DNS y mejora la velocidad de acceso.  
+Sin embargo, también ralentiza los rollbacks y los cambios de IP, porque si el servicio necesita moverse a otra dirección, los usuarios seguirán recibiendo la IP antigua hasta que el TTL caduque. Esto puede provocar ventanas de inconsistencia, donde algunos clientes usan la nueva IP mientras otros todavía dependen de la anterior.  
+
+---
+
+### 4.6.3 TLS – seguridad en tránsito
+- **CN/SAN:** CN=*.google.com  
+- **Vigencia:** válido desde 11 de agosto de 2025 hasta 3 de noviembre de 2025  
+- **Emisora:** Google Trust Services (WR2)  
+
+El certificado garantiza que la comunicación entre el cliente y el servidor se realiza de forma cifrada y confiable.  
+Si la cadena de confianza no se valida correctamente, el navegador mostrará errores de seguridad y el usuario no podrá establecer la conexión de manera segura.  
+Esto abre la posibilidad a ataques de intermediario y afecta directamente la experiencia de usuario, ya que la mayoría rechazará el acceso al sitio.  
+
+![TLS Evidencia](imagenes/tls-cert.png)  
+
+
+
+---
+
+### 4.6.4 Puertos – estado de runtime
+  - **Puerto 445** → asociado con Server Message Block, usado para compartir archivos e impresoras en red.  
+  - **Puerto 5432** → asociado con PostgreSQL, lo que indica que hay un servicio de base de datos en ejecución.  
+
+El puerto 5432 en escucha confirma que el servicio de base de datos PostgreSQL está activo.  
+Si este puerto no apareciera, significaría que el despliegue de la base de datos está incompleto.  
+De la misma forma, si un puerto esperado como el 445 ya estuviera ocupado por otro proceso, se generaría un conflicto que impediría que la aplicación usara ese recurso correctamente.  
+
+![Puertos Evidencia](imagenes/puertos.png)  
+
+---
+
+### 4.6.5 Principios 12-Factor y checklist de diagnóstico  
+
+En una aplicación siguiendo los principios 12-Factor, el puerto no debería estar fijo en el código sino definirse como una variable de entorno, por ejemplo PORT, lo que permite usar la misma aplicación en distintos entornos cambiando solo la configuración externa. Los logs deben enviarse al flujo estándar para que se recolecten fácilmente y no guardarse en archivos locales que después hay que rotar a mano, ya que eso complica la trazabilidad. Un anti-patrón frecuente es dejar credenciales escritas directamente en el código, lo que rompe la reproducibilidad entre entornos y expone información sensible; lo correcto es gestionarlas con variables de entorno o con herramientas de secretos.
+
+---
+### 4.6.6 Checklist de diagnóstico 
+**Escenario:** los usuarios reportan intermitencia en el servicio.  
+
+1. **Contrato HTTP**  
+   - Objetivo: validar que el servicio responde correctamente.  
+   - Evidencia esperada: respuestas 200 a solicitudes GET.  
+   - Interpretación: si aparece un código diferente, el contrato está roto.  
+   - Acción: si falla, escalar a desarrollo o iniciar rollback inmediato.  
+
+2. **Cabeceras HTTP**  
+   - Objetivo: confirmar trazabilidad y control de caché.  
+   - Evidencia esperada: presencia de cabeceras como `Cache-Control` o de diagnóstico.  
+   - Interpretación: si faltan, el tráfico no es observable y puede haber problemas de configuración.  
+   - Acción: si faltan cabeceras, revisar configuración de servidor y pipeline antes de promover.  
+
+3. **Resolución DNS**  
+   - Objetivo: comprobar que el dominio apunta a la IP correcta.  
+   - Evidencia esperada: registro A o CNAME con TTL coherente.  
+   - Interpretación: si el TTL es muy alto o resuelve a una IP antigua, la propagación es inconsistente.  
+   - Acción: si ocurre, reducir TTL en siguientes despliegues y esperar propagación antes de rollback.  
+
+4. **Certificado TLS**  
+   - Objetivo: verificar la validez y la cadena de confianza.  
+   - Evidencia esperada: certificado vigente y emitido por una CA reconocida.  
+   - Interpretación: si está caducado o no confiable, los clientes rechazan la conexión.  
+   - Acción: renovar el certificado o reinstalar la cadena antes de permitir tráfico.  
+
+5. **Puertos en escucha**  
+   - Objetivo: confirmar que los servicios están expuestos en los puertos correctos.  
+   - Evidencia esperada: puerto 443 abierto y asociado al proceso de la aplicación.  
+   - Interpretación: si el puerto no aparece o está ocupado, el despliegue es incompleto o hay conflicto.  
+   - Acción: si no está en escucha, revisar configuración o ejecutar rollback.  
+
+6. **Logs en stdout**  
+   - Objetivo: identificar errores en tiempo real.  
+   - Evidencia esperada: registros consistentes de peticiones y sin excepciones críticas.  
+   - Interpretación: si aparecen fallos recurrentes, hay un bug en la aplicación o configuración.  
+   - Acción: si persisten, escalar al equipo de desarrollo y activar rollback.  
+  
+
 ## Commits realizados
 1. Estructura de actividad 1  
 2. Día 1 – Comparativos e imágenes base  
 3. Día 2 – DevSecOps y estrategia de despliegue  
-4. 
+4. Día 3 – Evidencia, diagramas y entrega final
 
 ---
 
