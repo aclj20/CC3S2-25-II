@@ -119,94 +119,23 @@ Laptop personal con navegador Chrome y sistema operativo Windows 11.
 
 Haz ejecutable y pega el contenido:
 
-```bash
-chmod +x scripts/run_tests.sh
-```
 
-```bash
-#!/usr/bin/env bash
-# scripts/run_tests.sh
-
-set -euo pipefail
-IFS=$'\n\t'
-umask 027
-set -o noclobber
-
-# Usa PYTHON del entorno si existe; si no, python3
-PY="${PYTHON:-python3}"
-
-# Directorio de código fuente
-SRC_DIR="src"
-
-# Archivo temporal
-tmp="$(mktemp)"
-
-# Limpieza segura + posible rollback de hello.py si existiera un .bak
-cleanup() {
-	rc="$1"
-	rm -f "$tmp"
-	if [ -f "${SRC_DIR}/hello.py.bak" ]; then
-		mv -- "${SRC_DIR}/hello.py.bak" "${SRC_DIR}/hello.py"
-	fi
-	exit "$rc"
-}
-trap 'cleanup $?' EXIT INT TERM
-
-# Verificación de dependencias
-check_deps() {
-	local -a deps=("$PY" grep)
-	for dep in "${deps[@]}"; do
-		if ! command -v "$dep" >/dev/null 2>&1; then
-			echo "Error: $dep no está instalado" >&2
-			exit 1
-		fi
-	done
-}
-
-# Ejecuta un "test" simple sobre src/hello.py
-run_tests() {
-	local script="$1"
-	local output
-	output="$("$PY" "$script")"
-	if ! echo "$output" | grep -Fq "Hello, World!"; then
-		echo "Test falló: salida inesperada" >&2
-		mv -- "$script" "${script}.bak" || true
-		exit 2
-	fi
-	echo "Test pasó: $output"
-}
-
-# Demostración de pipefail
-echo "Demostrando pipefail:"
-set +o pipefail
-if false | true; then
-	echo "Sin pipefail: el pipe se considera exitoso (status 0)."
-fi
-set -o pipefail
-if false | true; then
-	:
-else
-	echo "Con pipefail: se detecta el fallo (status != 0)."
-fi
-
-# Escribir en $tmp (ya existe); '>|' evita el bloqueo de 'noclobber'
-cat <<'EOF' >|"$tmp"
-Testeando script Python
-EOF
-
-# Ejecutar
-check_deps
-run_tests "${SRC_DIR}/hello.py"
-```
 
 **Ejercicios:**
 
 * Ejecuta ./scripts/run\_tests.sh en un repositorio limpio. Observa las líneas "Demostrando pipefail": primero sin y luego con pipefail.
   Verifica que imprime "Test pasó" y termina exitosamente con código 0 (`echo $?`).
+  ![alt text](image-22.png)
 * Edita src/hello.py para que no imprima "Hello, World!". Ejecuta el script: verás "Test falló", moverá hello.py a hello.py.bak, y el **trap** lo restaurará. Confirma código 2 y ausencia de .bak.
-* Ejecuta `bash -x scripts/run_tests.sh`. Revisa el trace: expansión de `tmp` y `PY`, llamadas a funciones, here-doc y tuberías. Observa el trap armado al inicio y ejecutándose al final; estado 0.
-* Sustituye `output=$("$PY" "$script")` por `("$PY" "$script")`. Ejecuta script. `output` queda indefinida; con `set -u`, al referenciarla en `echo` aborta antes de `grep`. El trap limpia y devuelve código distinto no-cero.
+![alt text](image-23.png)
+![alt text](image-24.png)
+![alt text](image-25.png)
+![alt text](image-26.png)
 
+* Ejecuta `bash -x scripts/run_tests.sh`. Revisa el trace: expansión de `tmp` y `PY`, llamadas a funciones, here-doc y tuberías. Observa el trap armado al inicio y ejecutándose al final; estado 0.
+![alt text](image-28.png)
+* Sustituye `output=$("$PY" "$script")` por `("$PY" "$script")`. Ejecuta script. `output` queda indefinida; con `set -u`, al referenciarla en `echo` aborta antes de `grep`. El trap limpia y devuelve código distinto no-cero.
+![alt text](image-29.png)
  > En Bash, *trap* registra acciones a ejecutar cuando ocurren señales o eventos (EXIT, INT, ERR).
 > Permite limpiar recursos, restaurar archivos, cerrar procesos, registrar errores y preservar códigos de salida correctamente.
 
@@ -232,6 +161,7 @@ if __name__ == "__main__":
 
 > `python -m unittest` corre desde la raíz; `src/__init__.py` permite `from src.hello import greet`.
 
+![alt text](image-30.png)
 #### Makefile completo (con reproducibilidad y utilidades)
 
 ```makefile
@@ -326,15 +256,25 @@ help: ## Mostrar ayuda
 
 **Ejercicios:**
 * Ejecuta `make -n all` para un dry-run que muestre comandos sin ejecutarlos; identifica expansiones `$@` y `$<`, el orden de objetivos y cómo `all` encadena `tools`, `lint`, `build`, `test`, `package`.
+![alt text](image-31.png)
 * Ejecuta `make -d build` y localiza líneas "Considerando el archivo objetivo" y "Debe deshacerse",  explica por qué recompila o no `out/hello.txt` usando marcas de tiempo y cómo `mkdir -p $(@D)` garantiza el directorio.
+![alt text](image-32.png)
 * Fuerza un entorno con BSD tar en PATH y corre `make tools`; comprueba el fallo con "Se requiere GNU tar" y razona por qué `--sort`, `--numeric-owner` y `--mtime` son imprescindibles para reproducibilidad determinista.
 * Ejecuta `make verify-repro`; observa que genera dos artefactos y compara `SHA256_1` y `SHA256_2`. Si difieren, hipótesis: zona horaria, versión de tar, contenido no determinista o variables de entorno no fijadas.
+![alt text](image-33.png)
 * Corre `make clean && make all`, cronometrando; repite `make all` sin cambios y compara tiempos y logs. Explica por qué la segunda es más rápida gracias a timestamps y relaciones de dependencia bien declaradas.
+![alt text](image-36.png)
+![alt text](image-37.png)
 * Ejecuta `PYTHON=python3.12 make test` (si existe). Verifica con `python3.12 --version` y mensajes que el override funciona gracias a `?=` y a `PY="${PYTHON:-python3}"` en el script; confirma que el artefacto final no cambia respecto al intérprete por defecto.
+![alt text](image-34.png)
 * Ejecuta `make test`; describe cómo primero corre `scripts/run_tests.sh` y luego `python -m unittest`. Determina el comportamiento si el script de pruebas falla y cómo se propaga el error a la tarea global.
+![alt text](image-35.png)
 * Ejecuta `touch src/hello.py` y luego `make all`; identifica qué objetivos se rehacen (`build`, `test`, `package`) y relaciona el comportamiento con el timestamp actualizado y la cadena de dependencias especificada.
+![alt text](image-38.png)
 * Ejecuta `make -j4 all` y observa ejecución concurrente de objetivos independientes; confirma resultados idénticos a modo secuencial y explica cómo `mkdir -p $(@D)` y dependencias precisas evitan condiciones de carrera.
+![alt text](image-39.png)
 * Ejecuta `make lint` y luego `make format`; interpreta diagnósticos de `shellcheck`, revisa diferencias aplicadas por `shfmt` y, si está disponible, considera la salida de `ruff` sobre `src/` antes de empaquetar.
+![alt text](image-40.png)
 
 ### Parte 3: Extender
 
@@ -349,13 +289,17 @@ make lint
 make format
 ruff check src || true
 ```
+![alt text](image-41.png)
+![alt text](image-43.png)
+![alt text](image-42.png)
 
 #### 3.2 Rollback adicional
 
 Este chequeo asegura que, si el temporal desaparece, el script falla limpiamente y el `trap` revierte el estado (restaura `hello.py` desde `.bak`) preservando el código de salida.
 Borra el archivo temporal manualmente y observa el comportamiento: mensaje claro, salida no-cero, restauración y limpieza.
 *(Sugerencia práctica para reproducir la condición sin ambigüedad: opcionalmente imprime la ruta del temporal y da una pequeña pausa antes del chequeo para poder borrarlo desde otra terminal, por ejemplo, añadir `echo "$tmp" > out/tmp_path.txt; sleep 3` justo antes del `if`.)*
-
+![alt text](image-45.png)
+![alt text](image-44.png)
 ```bash
 # Al final de run_tests (sin cambiar nada más)
 if [[ ! -f "$tmp" ]]; then
@@ -382,7 +326,7 @@ make benchmark
 touch src/hello.py
 make benchmark
 ```
-
+![alt text](image-52.png)
 #### Checklist de Smoke-Tests - Bootstrap
 
 Confirma permisos de ejecución del script, presencia de herramientas requeridas y ayuda autodocumentada. Espera que `make tools` falle temprano si falta una dependencia, con mensaje específico.
@@ -393,7 +337,7 @@ chmod +x scripts/run_tests.sh
 make tools
 make help
 ```
-
+![alt text](image-46.png)
 #### Checklist de Smoke-Tests - Primera pasada
 
 Construye, prueba, empaqueta. Verifica que `out/hello.txt` exista y que `dist/app.tar.gz` solo contenga `hello.txt`. El empaquetado usa flags deterministas (`--sort`, `--numeric-owner`, `--owner=0`, `--group=0`, `--mtime='UTC 1970-01-01'`) para reproducibilidad bit a bit.
@@ -404,7 +348,7 @@ make all
 ls -l out/hello.txt dist/app.tar.gz
 tar -tzf dist/app.tar.gz
 ```
-
+![alt text](image-48.png)
 #### Checklist de Smoke-Tests - Incrementalidad
 
 Compara tiempos entre ejecuciones consecutivas de `make benchmark`; la segunda debe ser más rápida por la caché de Make. Tras `touch src/hello.py`, espera reconstrucción de `build/test/package`.
@@ -416,7 +360,8 @@ make benchmark
 touch src/hello.py
 make benchmark
 ```
-
+![alt text](image-53.png)
+![alt text](image-54.png)
 #### Checklist de Smoke-Tests - Rollback
 
 Introduce un cambio que rompa la aserción del test del script Bash y ejecútalo. Observa "Test falló", creación de `.bak`, código de salida `2` y restauración automática por `trap`.
@@ -426,12 +371,12 @@ Introduce un cambio que rompa la aserción del test del script Bash y ejecútalo
 # src/hello.py
 print(greet("Mundo"))
 ```
-
+![alt text](image-49.png)
 ```bash
 ./scripts/run_tests.sh ; echo $?
 git checkout -- src/hello.py
 ```
-
+![alt text](image-50.png)
 #### Checklist de Smoke-Tests - Lint y formato
 
 Ejecuta `make lint` y corrige problemas de shell reportados por `shellcheck`. Aplica `make format` para normalizar estilo con `shfmt`. Si `ruff` está disponible, revisa `src` y corrige advertencias.
@@ -442,7 +387,7 @@ make lint
 make format
 ruff check src || true
 ```
-
+![alt text](image-51.png)
 #### Checklist de Smoke-Tests - Limpieza
 
 Asegura un entorno de compilación limpio y reproducible para CI y pruebas locales. `make dist-clean` elimina artefactos (`out/`, `dist/`) y cachés (`.ruff_cache`, `__pycache__`).
@@ -452,7 +397,7 @@ Luego, `make all` debe reconstruir todo desde cero sin depender de estado previo
 make dist-clean
 make all
 ```
-
+![alt text](image-55.png)
 #### Checklist de Smoke-Tests - Reproducibilidad
 
 Valida que dos empaquetados consecutivos generen el mismo hash SHA256. Si difieren, revisa versión de `tar` (debe ser **GNU**), zona horaria (`TZ=UTC`), permisos y que no se cuelen archivos extra.
@@ -461,7 +406,7 @@ La verificación protege la cadena de suministro y evita *drift* entre desarroll
 ```bash
 make verify-repro
 ```
-
+![alt text](image-47.png)
 #### Notas de portabilidad
 
 * Usa **GNU tar** para reproducibilidad: `--sort=name`, `--numeric-owner`, `--owner=0`, `--group=0`, `--mtime='UTC 1970-01-01'`. Verifica artefactos con `sha256sum` (GNU coreutils). Evita BSD tar: carece de estos flags y rompe hashes en CI portables.
