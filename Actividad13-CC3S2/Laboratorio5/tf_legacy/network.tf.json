@@ -6,7 +6,7 @@
         },
         "APP_NAME": {
             "type": "string",
-            "default": "legacy-app"
+            "default": "legacy-service"
         },
         "LOG_LEVEL": {
             "type": "string",
