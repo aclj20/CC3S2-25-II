@@ -1,0 +1,29 @@
+{
+    "resource": {
+        "null_resource": {
+            "legacy_app": {
+                "triggers": {
+                    "PORT": "${var.PORT}",
+                    "APP_NAME": "${var.APP_NAME}",
+                    "LOG_LEVEL": "${var.LOG_LEVEL}",
+                    "script_sha256": "d7019180c7de297ca3c8184ac156bde5f8f721456494c213128f4e39d44020b3"
+                },
+                "provisioner": {
+                    "local-exec": {
+                        "interpreter": [
+                            "/usr/bin/env",
+                            "bash",
+                            "-c"
+                        ],
+                        "environment": {
+                            "PORT": "${var.PORT}",
+                            "APP_NAME": "${var.APP_NAME}",
+                            "LOG_LEVEL": "${var.LOG_LEVEL}"
+                        },
+                        "command": "./legacy/run.sh"
+                    }
+                }
+            }
+        }
+    }
+}
