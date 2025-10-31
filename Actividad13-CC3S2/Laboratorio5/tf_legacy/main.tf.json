@@ -2,6 +2,7 @@
     "resource": {
         "null_resource": {
             "legacy_app": {
+                "description": "Servidor local generado desde scripts legacy.",
                 "triggers": {
                     "PORT": "${var.PORT}",
                     "APP_NAME": "${var.APP_NAME}",
