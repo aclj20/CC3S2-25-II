@@ -1,7 +1,7 @@
 {
     "resource": {
         "null_resource": {
-            "legacy_app": {
+            "local_server": {
                 "description": "Servidor local generado desde scripts legacy.",
                 "triggers": {
                     "PORT": "${var.PORT}",
@@ -21,7 +21,7 @@
                             "APP_NAME": "${var.APP_NAME}",
                             "LOG_LEVEL": "${var.LOG_LEVEL}"
                         },
-                        "command": "./legacy/run.sh"
+                        "command": "echo Arrancando ${var.APP_NAME} en puerto ${var.PORT} (log level: ${var.LOG_LEVEL})"
                     }
                 }
             }

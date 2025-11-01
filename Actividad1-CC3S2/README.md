@@ -183,8 +183,16 @@ En una aplicación siguiendo los principios 12-Factor, el puerto no debería est
    - Evidencia esperada: registros consistentes de peticiones y sin excepciones críticas.  
    - Interpretación: si aparecen fallos recurrentes, hay un bug en la aplicación o configuración.  
    - Acción: si persisten, escalar al equipo de desarrollo y activar rollback.  
-  
 
+## 4.7 Desafíos de DevOps y mitigaciones
+**Riesgos y mitigaciones**
+| Riesgo                                            | Mitigación concreta                                          |
+|--------------------------------------------------|---------------------------------------------------------------|
+| Cambio causa caída amplia en usuarios             | Despliegues graduales y límite de blast radius por etapa |
+| Configuración errónea en producción               | Revisión cruzada y validación automatizada antes de promover |
+| Error difícil de revertir                         | Plan de rollback probado y checklist operativo           |
+
+**Experimento controlado: despliegue gradual vs big bang**
 ## Commits realizados
 1. Estructura de actividad 1  
 2. Día 1 – Comparativos e imágenes base  

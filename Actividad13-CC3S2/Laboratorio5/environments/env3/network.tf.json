@@ -1,0 +1,30 @@
+{
+    "variable": [
+        {
+            "api_key": [
+                {
+                    "type": "string",
+                    "sensitive": true
+                }
+            ]
+        },
+        {
+            "name": [
+                {
+                    "type": "string",
+                    "default": "hello-world",
+                    "description": "Nombre del servidor local"
+                }
+            ]
+        },
+        {
+            "network": [
+                {
+                    "type": "string",
+                    "default": "lab-net",
+                    "description": "Nombre de la red local"
+                }
+            ]
+        }
+    ]
+}

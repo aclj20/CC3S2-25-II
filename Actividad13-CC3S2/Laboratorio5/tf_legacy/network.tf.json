@@ -1,16 +1,16 @@
 {
-    "variable": {
-        "PORT": {
-            "type": "string",
-            "default": "8080"
-        },
-        "APP_NAME": {
-            "type": "string",
-            "default": "legacy-service"
-        },
-        "LOG_LEVEL": {
-            "type": "string",
-            "default": "info"
-        }
+  "variable": {
+    "PORT": {
+      "type": "string",
+      "default": "8080"
+    },
+    "APP_NAME": {
+      "type": "string",
+      "default": "legacy-service"
+    },
+    "LOG_LEVEL": {
+      "type": "string",
+      "default": "info"
     }
+  }
 }

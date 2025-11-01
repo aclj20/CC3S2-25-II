@@ -1,0 +1,81 @@
+import os, json, hashlib
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CFG_PATH = os.path.join(BASE_DIR, "config.cfg")
+RUN_PATH = os.path.join(BASE_DIR, "run.sh")
+OUT_DIR = os.path.join(BASE_DIR, "..", "tf_legacy")
+
+def read_file(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+def parse_cfg(path):
+    cfg = {}
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            cfg[k.strip()] = v.strip()
+    return cfg
+
+def render_tf_files(cfg, run_script_content):
+    os.makedirs(OUT_DIR, exist_ok=True)
+
+    # Crea network.tf.json con variables del config.cfg
+    network = {
+        "variable": {
+            key: {
+                "type": "string",
+                "default": value
+            }
+            for key, value in cfg.items()
+        }
+    }
+
+    with open(os.path.join(OUT_DIR, "network.tf.json"), "w", encoding="utf-8") as f:
+        json.dump(network, f, indent=4)
+
+    # Crea main.tf.json con null_resource que usa el run.sh
+    script_hash = hashlib.sha256(run_script_content.encode("utf-8")).hexdigest()
+
+    environment = {key: f"${{var.{key}}}" for key in cfg.keys()}
+
+    api_key = os.environ.get("API_KEY")
+    if not api_key:
+        print("API_KEY no encontrada en entorno.")
+
+    environment["API_KEY"] = "${var.api_key}"
+
+    main = {
+        "resource": {
+            "null_resource": {
+                "local_server": {
+                    "triggers": {
+                        **environment,
+                        "script_sha256": script_hash
+                    },
+                    "provisioner": {
+                        "local-exec": {
+                            "interpreter": ["/usr/bin/env", "bash", "-c"],
+                            "environment": environment,
+                            "command": "./legacy/run.sh"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    with open(os.path.join(OUT_DIR, "main.tf.json"), "w", encoding="utf-8") as f:
+        json.dump(main, f, indent=4)
+
+    print(f"Terraform config generada en '{OUT_DIR}/'")
+
+if __name__ == "__main__":
+
+    cfg = parse_cfg(CFG_PATH)
+    run_script = read_file(RUN_PATH)
+
+    render_tf_files(cfg, run_script)
