@@ -1,0 +1,30 @@
+@startuml
+title Patrón Prototype
+
+actor Cliente
+participant "ResourcePrototype\n(original)" as Orig
+participant "copy.deepcopy" as DeepCopy
+participant "mutator (λ)" as Mut
+participant "ResourcePrototype\n(clon)" as Clone
+
+Cliente -> Orig: clone(mutator)
+activate Orig
+
+Orig -> DeepCopy: deepcopy(_resource_dict)
+DeepCopy --> Orig: new_dict (copia profunda)
+
+alt mutator definido
+  Orig -> Mut: mutator(new_dict)
+  Mut --> Orig: new_dict mutado
+else mutator por defecto
+  note right of Orig
+    mutator = identidad
+    (no modifica el clon)
+  end note
+end
+
+Orig -> Clone: new ResourcePrototype(new_dict)
+deactivate Orig
+
+Orig --> Cliente: retorna nuevo prototipo (clon)
+@enduml
