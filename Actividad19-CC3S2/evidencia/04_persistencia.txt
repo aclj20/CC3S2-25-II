@@ -1,0 +1,17 @@
+camila@LAPTOP-QSD3TPMU:/mnt/c/Users/Camila/Desktop/uni/7mo/DS/CC3S2-25-II/Actividad19-CC3S2/Laboratorio10$ curl -i -X POST http://localhost/api/items/ -H "Content-Type: application/json" -d "{\"name\": \"test\"}"
+HTTP/1.1 201 Created
+date: Fri, 28 Nov 2025 19:10:58 GMT
+server: uvicorn
+content-length: 41
+content-type: application/json
+
+{"name":"test","description":null,"id":2}
+
+camila@LAPTOP-QSD3TPMU:/mnt/c/Users/Camila/Desktop/uni/7mo/DS/CC3S2-25-II/Actividad19-CC3S2/Laboratorio10$ curl -i curl -i http://localhost/api/items/
+HTTP/1.1 200 OK
+date: Fri, 28 Nov 2025 19:12:23 GMT
+server: uvicorn
+content-length: 110
+content-type: application/json
+
+[{"name":"test-item","description":"Descripción de prueba","id":1},{"name":"test","description":null,"id":2}]

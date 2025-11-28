@@ -1,0 +1,12 @@
+camila@LAPTOP-QSD3TPMU:/mnt/c/Users/Camila/Desktop/uni/7mo/DS/CC3S2-25-II/Actividad19-CC3S2/Laboratorio10$ docker logs ejemplo-ms
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+2025-11-28 19:03:31,358 - INFO - microservice - Arrancando la aplicación
+2025-11-28 19:03:31,358 - INFO - microservice - Inicializando base de datos en app.db
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:80 (Press CTRL+C to quit)
+INFO:     172.17.0.1:47860 - "GET /api/items/ HTTP/1.1" 200 OK
+2025-11-28 19:10:58,972 - INFO - microservice - Ítem insertado: test (id=2)
+2025-11-28 19:10:58,975 - INFO - microservice - Ítem creado por la lógica de negocio: {'id': 2, 'name': 'test', 'description': None}
+INFO:     172.17.0.1:49046 - "POST /api/items/ HTTP/1.1" 201 Created
+INFO:     172.17.0.1:50798 - "GET /api/items/ HTTP/1.1" 200 OK

@@ -1,0 +1,2 @@
+PS C:\Users\Camila\Desktop\uni\7mo\DS\CC3S2-25-II\Actividad19-CC3S2\Laboratorio10> docker run --rm -d --name ejemplo-ms -p 80:80 ejemplo-microservice:0.1.0
+dbcab3d38d6f750bda8dcc9fa4d827f95e16e6595633857d5fdf61297e4c963e

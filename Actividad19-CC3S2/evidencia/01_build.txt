@@ -1,0 +1,27 @@
+PS C:\Users\Camila\Desktop\uni\7mo\DS\CC3S2-25-II\Actividad19-CC3S2\Laboratorio10> docker build --no-cache -t ejemplo-microservice:0.1.0 .
+[+] Building 30.7s (14/14) FINISHED                    docker:desktop-linux
+ => [internal] load build definition from Dockerfile                   0.1s
+ => => transferring dockerfile: 1.21kB                                 0.0s
+ => [internal] load metadata for docker.io/library/python:3.12-slim    3.1s
+ => [internal] load .dockerignore                                      0.1s
+ => => transferring context: 284B                                      0.0s
+ => [internal] load build context                                      0.2s
+ => => transferring context: 33.01kB                                   0.0s
+ => CACHED [builder 1/4] FROM docker.io/library/python:3.12-slim@sha2  0.1s
+ => => resolve docker.io/library/python:3.12-slim@sha256:b43ff04d5df0  0.1s
+ => [builder 2/4] WORKDIR /build                                       0.1s
+ => [production 2/6] RUN groupadd -r appuser     && useradd -m -r -g   0.9s
+ => [builder 3/4] COPY requirements.txt .                              0.1s
+ => [builder 4/4] RUN pip install --user --no-cache-dir -r requireme  17.2s
+ => [production 3/6] WORKDIR /app                                      0.1s
+ => [production 4/6] COPY --from=builder /root/.local /home/appuser/.  0.7s
+ => [production 5/6] COPY . /app                                       0.1s
+ => [production 6/6] RUN chown -R appuser:appuser /app                 0.7s
+ => exporting to image                                                 6.5s
+ => => exporting layers                                                4.6s
+ => => exporting manifest sha256:443cc6e9d137feaba8c41f6bfc5d3dcf42f7  0.0s
+ => => exporting config sha256:8deaa92893fc5ac32425a85c22abd26e8eefae  0.0s
+ => => exporting attestation manifest sha256:54accd0966cafbca1b43ed13  0.1s
+ => => exporting manifest list sha256:51572d79a0d78c6c67b38835e338b91  0.0s
+ => => naming to docker.io/library/ejemplo-microservice:0.1.0          0.0s
+ => => unpacking to docker.io/library/ejemplo-microservice:0.1.0       1.5s

@@ -1,0 +1,20 @@
+PS C:\Users\Camila\Desktop\uni\7mo\DS\CC3S2-25-II\Actividad19-CC3S2\Laboratorio10> Invoke-WebRequest -Uri "http://localhost/api/items/" -Headers @{}
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : [{"name":"test-item","description":"DescripciÃ³n de prueba","id":1}]
+RawContent        : HTTP/1.1 200 OK
+                    Content-Length: 68
+                    Content-Type: application/json
+                    Date: Fri, 28 Nov 2025 19:03:42 GMT
+                    Server: uvicorn
+
+                    [{"name":"test-item","description":"DescripciÃ³n de prueba","id":1}]
+Forms             : {}
+Headers           : {[Content-Length, 68], [Content-Type, application/json], [Date, Fri, 28 Nov 2025 19:03:42 GMT], [Server, uvicorn]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 68
