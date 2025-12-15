@@ -3,21 +3,19 @@
 **Nombre:** Ariana Camila Lopez Julcarima
 
 **Fecha:** 14/12/2025 
-
+**Video:** https://drive.google.com/drive/folders/1uBam-6WFYfLP8QoATsTtTYiOukLEB2sm?usp=sharing
 
 ### 1. Prerrequisitos
 
 * **Docker** y **Docker Compose v2** **kubectl** y **Minikube**
 ![alt text](img/image-1.png)
-* : **syft**, **grype**, **cosign**
+
+**syft**, **grype**, **cosign**
 ![alt text](img/image.png)
 
 
 ### 2. Preparación de entorno
 
-`
-
-ambos comandos son equivalente
 # Variables comunes del laboratorio
 centraliza nombres y tags `./scripts/env.sh`
 
