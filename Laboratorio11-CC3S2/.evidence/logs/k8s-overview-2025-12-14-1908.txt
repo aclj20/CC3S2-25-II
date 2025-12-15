@@ -1,0 +1,12 @@
+NAME                            READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS      IMAGES                 SELECTOR
+deployment.apps/order-service   1/1     1            1           130m   order-service   user-service:7a7c936   app=order-service
+deployment.apps/user-service    1/1     1            1           177m   user-service    user-service:7a7c936   app=user-service
+
+NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE    SELECTOR
+service/kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP    178m   <none>
+service/order-service   ClusterIP   10.97.58.117    <none>        8001/TCP   130m   app=order-service
+service/user-service    ClusterIP   10.99.194.173   <none>        8000/TCP   177m   app=user-service
+
+NAME                                READY   STATUS    RESTARTS      AGE     IP            NODE       NOMINATED NODE   READINESS GATES
+pod/order-service-95766d9f9-csdns   1/1     Running   0             9m45s   10.244.0.10   minikube   <none>           <none>
+pod/user-service-55df65f6f7-f6hvf   1/1     Running   1 (28m ago)   177m    10.244.0.7    minikube   <none>           <none>
