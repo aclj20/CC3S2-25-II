@@ -1,6 +1,6 @@
-NAME                            READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS      IMAGES                 SELECTOR
-deployment.apps/order-service   1/1     1            1           130m   order-service   user-service:7a7c936   app=order-service
-deployment.apps/user-service    1/1     1            1           177m   user-service    user-service:7a7c936   app=user-service
+NAME                            READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS      IMAGES                  SELECTOR
+deployment.apps/order-service   1/1     1            1           130m   order-service   order-service:7a7c936   app=order-service
+deployment.apps/user-service    1/1     1            1           177m   user-service    user-service:7a7c936    app=user-service
 
 NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE    SELECTOR
 service/kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP    178m   <none>
